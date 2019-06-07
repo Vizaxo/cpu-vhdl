@@ -140,6 +140,41 @@ begin
   end process;
 end;
 
+use ieee.std_logic_1164.all;
+entity test_andn is
+  generic(n : natural);
+end test_andn;
+architecture behaivour of test_andn is
+  component andn
+    generic(n : natural);
+    port(a, b : in std_logic_vector(n-1 downto 0); o : out std_logic_vector(n-1 downto 0));
+  end component;
+  signal a, b, o : std_logic_vector(n-1 downto 0);
+begin
+  andn_: andn generic map (n) port map (a, b, o);
+  test_andn: process
+    type pattern_ty is record
+      a, b, o : std_logic;
+    end record;
+    type pattern_array is array (natural range <>) of pattern_ty;
+    constant patterns : pattern_array :=
+      (('0', '0', '0'),
+       ('0', '1', '0'),
+       ('1', '0', '0'),
+       ('1', '1', '1'));
+  begin
+    for j in 0 to n-1 loop
+      for i in patterns'range loop
+        a(j) <= patterns(i).a;
+        b(j) <= patterns(i).b;
+        wait for 1 ns;
+        assert o(j) = patterns(i).o report "andn: wrong output" severity error;
+      end loop;
+    end loop;
+    wait;
+  end process;
+end;
+
 entity test_all is
 end test_all;
 architecture behaviour of test_all is
@@ -149,11 +184,15 @@ architecture behaviour of test_all is
   component test_notn
     generic (n : natural);
   end component;
+  component test_andn
+    generic (n : natural);
+  end component;
 begin
   U0: test_adder;
   U1: test_mux;
   U2: test_dmux;
   U3: for j in 0 to 32 generate
     U4: test_notn generic map (n => j);
+    U5: test_andn generic map (n => j);
   end generate;
 end;
