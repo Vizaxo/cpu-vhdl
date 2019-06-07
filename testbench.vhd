@@ -36,7 +36,6 @@ begin
        assert s = patterns(i).s report "Adder: wrong sum" severity error;
        assert cout = patterns(i).cout report "Adder: wrong carry" severity error;
      end loop;
-     assert false report "Adder passed all tests" severity note;
      wait;
    end process;
 end;
@@ -70,11 +69,9 @@ begin
        a <= patterns(i).a;
        b <= patterns(i).b;
        sel <= patterns(i).sel;
-       o <= patterns(i).o;
        wait for 1 ns;
        assert o = patterns(i).o report "Mux: wrong output" severity error;
      end loop;
-     assert false report "Mux: passed all tests" severity note;
      wait;
    end process;
 end;
@@ -103,13 +100,10 @@ begin
      for j in patterns'range loop
        i <= patterns(j).i;
        sel <= patterns(j).sel;
-       a <= patterns(j).a;
-       b <= patterns(j).b;
        wait for 1 ns;
        assert a = patterns(j).a report "Dmux: wrong a" severity error;
        assert b = patterns(j).b report "Dmux: wrong b" severity error;
      end loop;
-     assert false report "Dmux: passed all tests" severity note;
      wait;
    end process;
 end;
@@ -138,13 +132,11 @@ begin
     for j in 0 to n-1 loop
       for i in patterns'range loop
         a(j) <= patterns(i).a;
-        o(j) <= patterns(i).o;
         wait for 1 ns;
         assert o(j) = patterns(i).o report "notn: wrong output" severity error;
-        assert false report "notn: passed all tests" severity note;
       end loop;
-      wait;
     end loop;
+    wait;
   end process;
 end;
 
@@ -162,6 +154,6 @@ begin
   U1: test_mux;
   U2: test_dmux;
   U3: for j in 0 to 32 generate
-    U4: test_notn generic map (n => 1);
+    U4: test_notn generic map (n => j);
   end generate;
 end;
