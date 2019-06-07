@@ -46,3 +46,18 @@ begin
     U0: or2 port map (a(i), b(i), o(i));
   end generate;
 end;
+
+use ieee.std_logic_1164.all;
+entity xorn is
+  generic(n : natural);
+  port(a, b : in std_logic_vector(n-1 downto 0); o : out std_logic_vector(n-1 downto 0));
+end xorn;
+architecture arch of xorn is
+  component xor2
+    port (a, b : in std_logic; o : out std_logic);
+  end component;
+begin
+  foo: for i in (n-1) downto 0 generate
+    U0: xor2 port map (a(i), b(i), o(i));
+  end generate;
+end;

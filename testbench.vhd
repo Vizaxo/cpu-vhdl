@@ -210,6 +210,41 @@ begin
   end process;
 end;
 
+use ieee.std_logic_1164.all;
+entity test_xorn is
+  generic(n : natural);
+end test_xorn;
+architecture behaivour of test_xorn is
+  component xorn
+    generic(n : natural);
+    port(a, b : in std_logic_vector(n-1 downto 0); o : out std_logic_vector(n-1 downto 0));
+  end component;
+  signal a, b, o : std_logic_vector(n-1 downto 0);
+begin
+  xorn_: xorn generic map (n) port map (a, b, o);
+  test_xorn: process
+    type pattern_ty is record
+      a, b, o : std_logic;
+    end record;
+    type pattern_array is array (natural range <>) of pattern_ty;
+    constant patterns : pattern_array :=
+      (('0', '0', '0'),
+       ('0', '1', '1'),
+       ('1', '0', '1'),
+       ('1', '1', '0'));
+  begin
+    for j in 0 to n-1 loop
+      for i in patterns'range loop
+        a(j) <= patterns(i).a;
+        b(j) <= patterns(i).b;
+        wait for 1 ns;
+        assert o(j) = patterns(i).o report "xorn: wrong output" severity error;
+      end loop;
+    end loop;
+    wait;
+  end process;
+end;
+
 entity test_all is
 end test_all;
 architecture behaviour of test_all is
@@ -225,6 +260,9 @@ architecture behaviour of test_all is
   component test_orn
     generic (n : natural);
   end component;
+  component test_xorn
+    generic (n : natural);
+  end component;
 begin
   U0: test_adder;
   U1: test_mux;
@@ -233,5 +271,6 @@ begin
     U4: test_notn generic map (n => j);
     U5: test_andn generic map (n => j);
     U6: test_orn generic map (n => j);
+    U7: test_xorn generic map (n => j);
   end generate;
 end;
