@@ -1,0 +1,40 @@
+dist: xenial
+language: minimal
+
+cache:
+  directories:
+  - $HOME/.local/
+
+addons:
+  apt:
+    packages:
+    - build-essential
+    - automake
+    - autoconf
+    - autoconf-archive
+    - flex
+    - check
+    - llvm-dev
+    - pkg-config
+    - zlib1g-dev
+    - curl
+
+before_install:
+- |
+  if [ ! -f $HOME/.local/bin/nvc ]; then
+    mkdir -p ~/.local/bin
+    pushd $HOME
+    git clone https://github.com/nickg/nvc
+    pushd nvc
+    ./autogen.sh
+    mkdir build && pushd build
+    ../configure --prefix=$HOME/.local/ --with-llvm=/usr/bin/llvm-config
+    make
+    make install
+    popd
+    popd
+    popd
+  fi;
+
+script:
+- make test
