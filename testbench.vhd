@@ -113,15 +113,55 @@ begin
      wait;
    end process;
 end;
+
+use ieee.std_logic_1164.all;
+entity test_notn is
+  generic(n : natural);
+end test_notn;
+architecture behaivour of test_notn is
+  component notn
+    generic(n : natural);
+    port(a : in std_logic_vector(n-1 downto 0); o : out std_logic_vector(n-1 downto 0));
+  end component;
+  signal a, o : std_logic_vector(n-1 downto 0);
+begin
+  notn_: notn generic map (n) port map (a, o);
+  test_notn: process
+    type pattern_ty is record
+      a, o : std_logic;
+    end record;
+    type pattern_array is array (natural range <>) of pattern_ty;
+    constant patterns : pattern_array :=
+      (('0', '1'),
+       ('1', '0'));
+  begin
+    for j in 0 to n-1 loop
+      for i in patterns'range loop
+        a(j) <= patterns(i).a;
+        o(j) <= patterns(i).o;
+        wait for 1 ns;
+        assert o(j) = patterns(i).o report "notn: wrong output" severity error;
+        assert false report "notn: passed all tests" severity note;
+      end loop;
+      wait;
+    end loop;
+  end process;
+end;
+
 entity test_all is
 end test_all;
-
 architecture behaviour of test_all is
   component test_adder end component;
   component test_mux end component;
   component test_dmux end component;
+  component test_notn
+    generic (n : natural);
+  end component;
 begin
   U0: test_adder;
   U1: test_mux;
   U2: test_dmux;
+  U3: for j in 0 to 32 generate
+    U4: test_notn generic map (n => 1);
+  end generate;
 end;
