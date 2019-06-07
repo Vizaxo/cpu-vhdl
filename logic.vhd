@@ -114,3 +114,20 @@ begin
   U3: or2 port map (a1, b1, o);
 end structural;
 
+use ieee.std_logic_1164.all;
+entity dmux is
+  port (i, sel : in std_logic; a, b : out std_logic);
+end dmux;
+architecture structural of dmux is
+  component and2
+    port (a, b : in std_logic; o : out std_logic);
+  end component;
+  component not1
+    port (a : in std_logic; o : out std_logic);
+  end component;
+  signal notsel : std_logic;
+begin
+  U0: not1 port map (sel, notsel);
+  U1: and2 port map (i, notsel, a);
+  U2: and2 port map (i, sel, b);
+end structural;

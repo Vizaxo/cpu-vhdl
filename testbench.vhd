@@ -40,6 +40,7 @@ begin
      wait;
    end process;
 end;
+
 use ieee.std_logic_1164.all;
 entity test_mux is
 end test_mux;
@@ -76,15 +77,51 @@ begin
      assert false report "Mux: passed all tests" severity note;
      wait;
    end process;
+end;
 
-END;
-
+use ieee.std_logic_1164.all;
+entity test_dmux is
+end test_dmux;
+architecture behaviour of test_dmux is
+  component dmux
+    port(i, sel : in std_logic; a, b : out std_logic);
+  end component;
+  signal i, sel, a, b : std_logic;
+begin
+   dmux_: dmux port map (i, sel, a, b);
+   test_dmux: process
+     type pattern_ty is record
+       i, sel, a, b : std_logic;
+     end record;
+     type pattern_array is array (natural range <>) of pattern_ty;
+     constant patterns : pattern_array :=
+       (('0', '0', '0', '0'),
+        ('0', '1', '0', '0'),
+        ('1', '0', '1', '0'),
+        ('1', '1', '0', '1'));
+   begin
+     for j in patterns'range loop
+       i <= patterns(j).i;
+       sel <= patterns(j).sel;
+       a <= patterns(j).a;
+       b <= patterns(j).b;
+       wait for 1 ns;
+       assert a = patterns(j).a report "Dmux: wrong a" severity error;
+       assert b = patterns(j).b report "Dmux: wrong b" severity error;
+     end loop;
+     assert false report "Dmux: passed all tests" severity note;
+     wait;
+   end process;
+end;
 entity test_all is
 end test_all;
+
 architecture behaviour of test_all is
   component test_adder end component;
   component test_mux end component;
+  component test_dmux end component;
 begin
   U0: test_adder;
   U1: test_mux;
+  U2: test_dmux;
 end;
