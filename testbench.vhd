@@ -245,6 +245,49 @@ begin
   end process;
 end;
 
+use ieee.std_logic_1164.all;
+entity test_muxn is
+  generic(n : natural);
+end test_muxn;
+architecture behaivour of test_muxn is
+  component muxn
+    generic(n : natural);
+    port(a, b : in std_logic_vector(n-1 downto 0);
+         sel : in std_logic;
+         o : out std_logic_vector(n-1 downto 0));
+  end component;
+  signal a, b, o : std_logic_vector(n-1 downto 0);
+  signal sel : std_logic;
+begin
+  muxn_: muxn generic map (n) port map (a, b, sel, o);
+  test_muxn: process
+    type pattern_ty is record
+      a, b, sel, o : std_logic;
+    end record;
+    type pattern_array is array (natural range <>) of pattern_ty;
+    constant patterns : pattern_array :=
+      (('0', '0', '0', '0'),
+       ('0', '0', '1', '0'),
+       ('0', '1', '0', '0'),
+       ('0', '1', '1', '1'),
+       ('1', '0', '0', '1'),
+       ('1', '0', '1', '0'),
+       ('1', '1', '0', '1'),
+       ('1', '1', '1', '1'));
+  begin
+    for j in 0 to n-1 loop
+      for i in patterns'range loop
+        a(j) <= patterns(i).a;
+        b(j) <= patterns(i).b;
+        sel <= patterns(i).sel;
+        wait for 1 ns;
+        assert o(j) = patterns(i).o report "muxn: wrong output" severity error;
+      end loop;
+    end loop;
+    wait;
+  end process;
+end;
+
 entity test_all is
 end test_all;
 architecture behaviour of test_all is
@@ -263,6 +306,9 @@ architecture behaviour of test_all is
   component test_xorn
     generic (n : natural);
   end component;
+  component test_muxn
+    generic (n : natural);
+  end component;
 begin
   U0: test_adder;
   U1: test_mux;
@@ -272,5 +318,6 @@ begin
     U5: test_andn generic map (n => j);
     U6: test_orn generic map (n => j);
     U7: test_xorn generic map (n => j);
+    U8: test_muxn generic map (n => j);
   end generate;
 end;
